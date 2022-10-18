@@ -1,9 +1,9 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useContext, useState } from "react";
 import Modal from "react-modal";
 import closeImg from "../../assets/close.svg";
 import incomeImg from "../../assets/income.svg";
 import outcomeImg from "../../assets/outcome.svg";
-import { api } from "../../services/api";
+import { TransactionsContext } from "../../TransactionsContext";
 import { Container, RadioBox, TransactionTypeContainer } from "./styles";
 
 interface NewTransactionModalProps {
@@ -12,10 +12,10 @@ interface NewTransactionModalProps {
 }
 
 interface ITransactions {
-  title?: string;
-  velue?: number;
-  type?: string;
-  category?: string;
+  title: string;
+  amount: number;
+  type: string;
+  category: string;
 }
 
 Modal.setAppElement("#root");
@@ -25,11 +25,14 @@ export const NewTransactionModal = ({
   onRequestClose,
 }: NewTransactionModalProps) => {
   const [type, setType] = useState("");
-  const [transaction, setTransaction] = useState<ITransactions>();
+  const [transaction, setTransaction] = useState<ITransactions>({} as ITransactions);
+  const { createTransaction } = useContext(TransactionsContext);
 
-  const handleCreateNewTransactions = (event: FormEvent) => {
+  const handleCreateNewTransactions = async (event: FormEvent) => {
     event.preventDefault();
-    api.post('/transactions', transaction)
+    await createTransaction(transaction);
+    onRequestClose();
+    setType('')
   };
 
   return (
@@ -64,7 +67,7 @@ export const NewTransactionModal = ({
           onBlur={(event) => {
             setTransaction((transaction) => ({
               ...transaction,
-              value: Number(event.target.value),
+              amount: Number(event.target.value),
             }));
           }}
         />
